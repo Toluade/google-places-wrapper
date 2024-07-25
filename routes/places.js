@@ -9,13 +9,16 @@ const PASSKEY = process.env.PASSKEY;
 const GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
 
 router.post("/search", async (req, res) => {
+  console.log("✅ search router");
   const { textQuery, passkey } = req.body;
 
   if (!textQuery) {
+    console.log("❌ textQuery is required");
     return res.status(400).json({ error: "textQuery is required" });
   }
 
   if (!passkey || passkey !== PASSKEY) {
+    console.log("❌ Unauthorized - passkey is required");
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -33,8 +36,10 @@ router.post("/search", async (req, res) => {
       }
     );
 
+    console.log("✅ successful");
     res.json(response.data);
   } catch (error) {
+    console.log("❌ Server error");
     res.status(500).json({ error: error.message });
   }
 });
