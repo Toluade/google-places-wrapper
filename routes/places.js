@@ -5,13 +5,18 @@ const router = express.Router();
 const axios = require("axios");
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const PASSKEY = process.env.PASSKEY;
 const GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
 
 router.post("/search", async (req, res) => {
-  const { textQuery } = req.body;
+  const { textQuery, passkey } = req.body;
 
   if (!textQuery) {
     return res.status(400).json({ error: "textQuery is required" });
+  }
+
+  if (!passkey || passkey !== PASSKEY) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
