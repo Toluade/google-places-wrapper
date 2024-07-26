@@ -10,15 +10,28 @@ const GOOGLE_PLACES_URL = "https://places.googleapis.com/v1/places:searchText";
 
 router.post("/search", async (req, res) => {
   console.log("✅ search router");
-  console.log("body", req.apiGateway.event.body);
-  const { textQuery, passkey } = JSON.parse(req.apiGateway.event.body);
-  //   console.log("textQuery:", textQuery, "passkey:", passkey);
 
-  if (!passkey || passkey !== PASSKEY) {
+  const body = {};
+  console.log("req:", req);
+  if (req.body) {
+    // console.log("body", req.body);
+    body["passkey"] = req.body["passkey"];
+    body["textQuery"] = req.body["textQuery"];
+  } else if (req.apiGateway) {
+    // console.log("body", "req.apiGateway.event.body");
+    const reqBody = await req.apiGateway.event.body;
+    body["passkey"] = JSON.parse(reqBody)["passkey"];
+    body["textQuery"] = JSON.parse(reqBody)["textQuery"];
+  } else {
+    console.log("❌ Bad request. No body present");
+    return res.status(400).json({ error: "Bad request. No body present" });
+  }
+
+  if (!body.passkey || body.passkey !== PASSKEY) {
     console.log("❌ Unauthorized - passkey is required");
     return res.status(401).json({ error: "Unauthorized" });
   }
-  if (!textQuery) {
+  if (!body.textQuery) {
     console.log("❌ textQuery is required");
     return res.status(400).json({ error: "textQuery is required" });
   }
@@ -26,7 +39,7 @@ router.post("/search", async (req, res) => {
   try {
     const response = await axios.post(
       GOOGLE_PLACES_URL,
-      { textQuery },
+      { textQuery: body.textQuery },
       {
         headers: {
           "Content-Type": "application/json",
